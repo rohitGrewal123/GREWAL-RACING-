@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0">
+
+<title>Grewal Racing</title>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    overflow:hidden;
+    background:#111;
+    font-family:Arial,sans-serif;
+    touch-action:none;
+}
+
+/* GAME */
+
+#game{
+    width:100vw;
+    height:100vh;
+    position:relative;
+    overflow:hidden;
+    background:#222;
+}
+
+/* START SCREEN */
+
+#startScreen{
+    position:absolute;
+    width:100%;
+    height:100%;
+    background:linear-gradient(#111,#333);
+    z-index:100;
+    color:white;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+}
+
+#startScreen h1{
+    font-size:45px;
+    margin-bottom:10px;
+}
+
+#startScreen p{
+    font-size:18px;
+    margin-bottom:30px;
+}
+
+#startButton{
+    border:0;
+    padding:15px 40px;
+    font-size:22px;
+    font-weight:bold;
+    border-radius:12px;
+    background:#fff;
+    color:#111;
+}
+
+/* ROAD */
+
+#road{
+    position:absolute;
+    width:80%;
+    height:100%;
+    left:10%;
+    background:#444;
+    border-left:6px solid white;
+    border-right:6px solid white;
+    overflow:hidden;
+}
+
+/* ROAD LINES */
+
+.line{
+    position:absolute;
+    width:8px;
+    height:110px;
+    background:white;
+    left:50%;
+    transform:translateX(-50%);
+}
+
+/* PLAYER */
+
+.car{
+    position:absolute;
+    width:58px;
+    height:100px;
+    border-radius:12px;
+}
+
+/* PLAYER CAR */
+
+#player{
+    background:#e00000;
+    bottom:110px;
+    left:50%;
+    transform:translateX(-50%);
+    box-shadow:0 4px 12px #000;
+}
+
+/* CAR WINDOWS */
+
+.car::before{
+    content:"";
+    position:absolute;
+    width:38px;
+    height:25px;
+    background:#111;
+    left:10px;
+    top:13px;
+    border-radius:6px;
+}
+
+.car::after{
+    content:"";
+    position:absolute;
+    width:38px;
+    height:22px;
+    background:#111;
+    left:10px;
+    bottom:13px;
+    border-radius:6px;
+}
+
+/* ENEMY */
+
+.enemy{
+    background:#ffd000;
+    top:-120px;
+}
+
+/* SECOND ENEMY */
+
+#enemy2{
+    background:#008cff;
+}
+
+/* HUD */
+
+#hud{
+    position:absolute;
+    top:12px;
+    left:15px;
+    right:15px;
+    z-index:20;
+    color:white;
+    font-size:20px;
+    font-weight:bold;
+    display:flex;
+    justify-content:space-between;
+}
+
+/* CONTROLS */
+
+.controls{
+    position:absolute;
+    bottom:20px;
+    width:100%;
+    display:flex;
+    justify-content:space-between;
+    padding:0 25px;
+    z-index:30;
+}
+
+.control{
+    width:85px;
+    height:65px;
+    border:0;
+    border-radius:18px;
+    font-size:30px;
+    background:rgba(255,255,255,.8);
+}
+
+/* GAME OVER */
+
+#gameOver{
+    position:absolute;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,.8);
+    z-index:90;
+    display:none;
+    color:white;
+    align-items:center;
+    justify-content:center;
+    flex-direction:column;
+    text-align:center;
+}
+
+#gameOver h2{
+    font-size:42px;
+    margin-bottom:15px;
+}
+
+#restart{
+    margin-top:20px;
+    padding:13px 30px;
+    border:0;
+    border-radius:10px;
+    font-size:20px;
+}
+
+/* COIN */
+
+.coin{
+    position:absolute;
+    width:30px;
+    height:30px;
+    border-radius:50%;
+    background:gold;
+    border:4px solid #fff;
+    box-shadow:0 0 10px gold;
+}
+
+</style>
+</head>
+
+<body>
+
+<div id="game">
+
+    <!-- START SCREEN -->
+
+    <div id="startScreen">
+
+        <h1>🏁 GREWAL RACING</h1>
+
+        <p>Drive • Dodge • Collect Coins</p>
+
+        <button id="startButton">
+            START GAME
+        </button>
+
+    </div>
+
+
+    <!-- ROAD -->
+
+    <div id="road">
+
+        <!-- Road lines -->
+
+        <div class="line" style="top:0px"></div>
+        <div class="line" style="top:180px"></div>
+        <div class="line" style="top:360px"></div>
+        <div class="line" style="top:540px"></div>
+        <div class="line" style="top:720px"></div>
+
+
+        <!-- PLAYER -->
+
+        <div id="player" class="car"></div>
+
+
+        <!-- ENEMIES -->
+
+        <div id="enemy1" class="car enemy"></div>
+
+        <div id="enemy2" class="car enemy"></div>
+
+
+        <!-- COIN -->
+
+        <div id="coin" class="coin"></div>
+
+    </div>
+
+
+    <!-- HUD -->
+
+    <div id="hud">
+
+        <div id="score">
+            🏆 0
+        </div>
+
+        <div id="coins">
+            🪙 0
+        </div>
+
+        <div id="lives">
+            ❤️ 3
+        </div>
+
+    </div>
+
+
+    <!-- CONTROLS -->
+
+    <div class="controls">
+
+        <button class="control" id="left">
+            ⬅️
+        </button>
+
+        <button class="control" id="right">
+            ➡️
+        </button>
+
+    </div>
+
+
+    <!-- GAME OVER -->
+
+    <div id="gameOver">
+
+        <h2>GAME OVER</h2>
+
+        <p id="finalScore">
+            Score: 0
+        </p>
+
+        <p id="finalCoins">
+            Coins: 0
+        </p>
+
+        <button id="restart">
+            🔄 PLAY AGAIN
+        </button>
+
+    </div>
+
+</div>
+
+
+<script>
+
+/* ELEMENTS */
+
+const game =
+document.getElementById("game");
+
+const road =
+document.getElementById("road");
+
+const player =
+document.getElementById("player");
+
+const enemy1 =
+document.getElementById("enemy1");
+
+const enemy2 =
+document.getElementById("enemy2");
+
+const coin =
+document.getElementById("coin");
+
+const startScreen =
+document.getElementById("startScreen");
+
+const gameOver =
+document.getElementById("gameOver");
+
+const startButton =
+document.getElementById("startButton");
+
+const restart =
+document.getElementById("restart");
+
+const scoreText =
+document.getElementById("score");
+
+const coinsText =
+document.getElementById("coins");
+
+const livesText =
+document.getElementById("lives");
+
+const finalScore =
+document.getElementById("finalScore");
+
+const finalCoins =
+document.getElementById("finalCoins");
+
+const left =
+document.getElementById("left");
+
+const right =
+document.getElementById("right");
+
+
+/* VARIABLES */
+
+let playerX = 0;
+
+let enemy1Y = -150;
+
+let enemy2Y = -450;
+
+let coinY = -300;
+
+let score = 0;
+
+let coins = 0;
+
+let lives = 3;
+
+let speed = 5;
+
+let running = false;
+
+let moveLeft = false;
+
+let moveRight = false;
+
+
+/* RANDOM POSITION */
+
+function randomPosition(){
+
+    return Math.floor(
+        Math.random() *
+        (road.clientWidth - 65)
+    );
+
+}
+
+
+/* START GAME */
+
+function startGame(){
+
+    startScreen.style.display = "none";
+
+    gameOver.style.display = "none";
+
+    running = true;
+
+    score = 0;
+
+    coins = 0;
+
+    lives = 3;
+
+    speed = 5;
+
+    playerX =
+        road.clientWidth / 2 - 29;
+
+    enemy1Y = -150;
+
+    enemy2Y = -450;
+
+    coinY = -300;
+
+
+    player.style.left =
+        playerX + "px";
+
+
+    enemy1.style.left =
+        randomPosition() + "px";
+
+
+    enemy2.style.left =
+        randomPosition() + "px";
+
+
+    coin.style.left =
+        randomPosition() + "px";
+
+
+    enemy1.style.top =
+        enemy1Y + "px";
+
+
+    enemy2.style.top =
+        enemy2Y + "px";
+
+
+    coin.style.top =
+        coinY + "px";
+
+
+    updateHUD();
+
+    requestAnimationFrame(gameLoop);
+
+}
+
+
+/* HUD */
+
+function updateHUD(){
+
+    scoreText.innerText =
+        "🏆 " + score;
+
+    coinsText.innerText =
+        "🪙 " + coins;
+
+    livesText.innerText =
+        "❤️ " + lives;
+
+}
+
+
+/* COLLISION */
+
+function collision(a,b){
+
+    const A =
+        a.getBoundingClientRect();
+
+    const B =
+        b.getBoundingClientRect();
+
+
+    return !(
+        A.bottom < B.top ||
+        A.top > B.bottom ||
+        A.right < B.left ||
+        A.left > B.right
+    );
+
+}
+
+
+/* RESET ENEMY */
+
+function resetEnemy(enemy){
+
+    enemy.style.left =
+        randomPosition() + "px";
+
+}
+
+
+/* GAME LOOP */
+
+function gameLoop(){
+
+    if(!running) return;
+
+
+    /* PLAYER MOVEMENT */
+
+    if(moveLeft){
+
+        playerX -= 7;
+
+    }
+
+    if(moveRight){
+
+        playerX += 7;
+
+    }
+
+
+    /* ROAD LIMIT */
+
+    if(playerX < 0){
+
+        playerX = 0;
+
+    }
+
+
+    if(
+        playerX >
+        road.clientWidth -
+        player.clientWidth
+    ){
+
+        playerX =
+        road.clientWidth -
+        player.clientWidth;
+
+    }
+
+
+    player.style.left =
+        playerX + "px";
+
+
+    /* ENEMY MOVEMENT */
+
+    enemy1Y += speed;
+
+    enemy2Y += speed;
+
+    coinY += speed;
+
+
+    enemy1.style.top =
+        enemy1Y + "px";
+
+    enemy2.style.top =
+        enemy2Y + "px";
+
+    coin.style.top =
+        coinY + "px";
+
+
+    /* ENEMY 1 RESET */
+
+    if(
+        enemy1Y >
+        road.clientHeight
+    ){
+
+        enemy1Y = -120;
+
+        resetEnemy(enemy1);
+
+        score++;
+
+    }
+
+
+    /* ENEMY 2 RESET */
+
+    if(
+        enemy2Y >
+        road.clientHeight
+    ){
+
+        enemy2Y = -250;
+
+        resetEnemy(enemy2);
+
+        score++;
+
+    }
+
+
+    /* COIN RESET */
+
+    if(
+        coinY >
+        road.clientHeight
+    ){
+
+        coinY = -200;
+
+        coin.style.left =
+            randomPosition() + "px";
+
+    }
+
+
+    /* COIN COLLECTION */
+
+    if(
+        collision(player,coin)
+    ){
+
+        coins++;
+
+        coinY = -200;
+
+        coin.style.left =
+            randomPosition() + "px";
+
+    }
+
+
+    /* ENEMY COLLISION */
+
+    if(
+        collision(player,enemy1)
+    ){
+
+        lives--;
+
+        enemy1Y = -150;
+
+        resetEnemy(enemy1);
+
+    }
+
+
+    if(
+        collision(player,enemy2)
+    ){
+
+        lives--;
+
+        enemy2Y = -300;
+
+        resetEnemy(enemy2);
+
+    }
+
+
+    /* DIFFICULTY */
+
+    speed =
+        5 + Math.floor(score / 10);
+
+
+    updateHUD();
+
+
+    /* GAME OVER */
+
+    if(lives <= 0){
+
+        endGame();
+
+        return;
+
+    }
+
+
+    requestAnimationFrame(gameLoop);
+
+}
+
+
+/* END GAME */
+
+function endGame(){
+
+    running = false;
+
+    finalScore.innerText =
+        "🏆 Score: " + score;
+
+    finalCoins.innerText =
+        "🪙 Coins: " + coins;
+
+    gameOver.style.display =
+        "flex";
+
+}
+
+
+/* MOBILE CONTROLS */
+
+
+/* LEFT */
+
+left.addEventListener(
+    "touchstart",
+    function(e){
+
+        e.preventDefault();
+
+        moveLeft = true;
+
+    }
+);
+
+
+left.addEventListener(
+    "touchend",
+    function(e){
+
+        e.preventDefault();
+
+        moveLeft = false;
+
+    }
+);
+
+
+/* RIGHT */
+
+right.addEventListener(
+    "touchstart",
+    function(e){
+
+        e.preventDefault();
+
+        moveRight = true;
+
+    }
+);
+
+
+right.addEventListener(
+    "touchend",
+    function(e){
+
+        e.preventDefault();
+
+        moveRight = false;
+
+    }
+);
+
+
+/* KEYBOARD */
+
+document.addEventListener(
+    "keydown",
+    function(e){
+
+        if(e.key === "ArrowLeft"){
+
+            moveLeft = true;
+
+        }
+
+        if(e.key === "ArrowRight"){
+
+            moveRight = true;
+
+        }
+
+    }
+);
+
+
+document.addEventListener(
+    "keyup",
+    function(e){
+
+        if(e.key === "ArrowLeft"){
+
+            moveLeft = false;
+
+        }
+
+        if(e.key === "ArrowRight"){
+
+            moveRight = false;
+
+        }
+
+    }
+);
+
+
+/* BUTTONS */
+
+startButton.addEventListener(
+    "click",
+    startGame
+);
+
+
+restart.addEventListener(
+    "click",
+    startGame
+);
+
+</script>
+
+</body>
+</html>
